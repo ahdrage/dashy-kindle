@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="{{refresh}}">
+  <title>Dashy for Kindle</title>
+  <link rel="icon" href="data:,">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f0efeb; color: #252820; font: 15px/1.5 system-ui, sans-serif; }
+    header { max-width: 1100px; margin: auto; padding: 25px 30px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    h1 { font-size: 22px; line-height: 1; letter-spacing: -.7px; margin: 0 0 5px; font-weight: 650; }
+    .subtitle { color: #62675c; font-size: 12px; }
+    nav { display: flex; flex-wrap: wrap; gap: 5px; }
+    a { color: inherit; text-decoration: none; }
+    nav a { padding: 7px 14px; border-radius: 30px; border: 1px solid #c5c9bf; font-size: 13px; }
+    nav a[aria-current="true"] { color: #fff; background: #303b30; border-color: #303b30; }
+    a:focus-visible { outline: 3px solid #546f54; outline-offset: 3px; }
+    main { margin: 0 auto; padding: 12px 24px 22px; text-align: center; }
+    .frame { display: inline-block; padding: 18px 18px 35px; background: #252623; border-radius: 18px; box-shadow: 0 15px 35px #20282018; }
+    img { display: block; height: min(64vh, 710px); width: auto; max-width: 100%; object-fit: contain; background: white; }
+    .frame.landscape img { height: min(60vh, 590px); }
+    .device-name { margin: 16px 0 -20px; color: #a7a9a1; letter-spacing: 2.5px; font-size: 11px; }
+    .note { margin: 23px 0 15px; color: #62675c; font-size: 13px; }
+    .actions { display: flex; gap: 23px; justify-content: center; font-size: 13px; }
+    .actions a { border-bottom: 1px solid #8b9186; padding-bottom: 3px; }
+    @media (max-width: 550px) { header { padding: 22px; align-items: flex-start; flex-direction: column; gap: 16px; } main { padding: 4px 16px 25px; } img { height: auto; max-height: 65vh; } .frame.landscape img { width: 100%; height: auto; } .frame { padding: 13px 13px 29px; } .device-name { margin-bottom: -18px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>Dashy</h1><div class="subtitle">Hjemmeoversikt for Kindle</div></div>
+    <nav aria-label="Retning">
+      <a href="/?orientation=portrait" aria-current="{{portrait_selected}}">Stående</a>
+      <a href="/?orientation=landscape" aria-current="{{landscape_selected}}">Liggende</a>
+    </nav>
+  </header>
+  <main>
+    <div class="frame {{orientation}}">
+      <img src="/frame.png?orientation={{orientation}}" alt="Dashy: klokke og dato i Oslo, med eksempelverdier for innetemperatur, CO2 og utetemperatur.">
+      <div class="device-name">kindle</div>
+    </div>
+    <p class="note">Klokken følger Oslo-tid. Målingene er eksempeldata.</p>
+    <div class="actions">
+      <a href="/display?orientation={{orientation}}">Åpne skjermvisning</a>
+      <a href="/dashboard.pdf">Last ned PDF-demo</a>
+    </div>
+  </main>
+</body>
+</html>

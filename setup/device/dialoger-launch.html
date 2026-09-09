@@ -1,0 +1,21 @@
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8" />
+    <script>
+        nativeBridge.accessHasharrayProperty("com.lab126.transfer", "request_upload", {
+            url: "http://127.0.0.1",
+            source_command: "sh /mnt/us/dashy/apply-landscape.sh",
+            unique_id: "dashy_open_" + new Date().getTime(),
+
+            netid: 1,
+            priority: 50,
+            notify_progress_interval: 20,
+            notify_pub: "com.lab126.archive",
+            notify_prop: "transferProgressNotification",
+        });
+        setTimeout(function () {
+            try { nativeBridge.dismissMe(); } catch (error) {}
+        }, 2000);
+    </script>
+</head>
+</html>

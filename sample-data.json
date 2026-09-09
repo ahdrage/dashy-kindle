@@ -1,0 +1,14 @@
+{
+  "body": {
+    "devices": [
+      {
+        "station_name": "Dashy demo",
+        "dashboard_data": {"Temperature": 21.3, "CO2": 623},
+        "modules": [
+          {"type": "NAModule4", "dashboard_data": {"Temperature": 22.8}},
+          {"type": "NAModule1", "dashboard_data": {"Temperature": 14.2}}
+        ]
+      }
+    ]
+  }
+}

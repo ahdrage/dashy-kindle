@@ -1,0 +1,21 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+secrets*
+output/
+tmp/
+backups/
+.DS_Store
+.deps/
+.playwright-mcp/
+node_modules/
+*.log
+*.pem
+*.key
+._*
+# Private device history and unrelated workspace notes.
+DEVICE-PROGRESS.md
+*-assessment-*.md

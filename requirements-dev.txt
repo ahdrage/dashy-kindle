@@ -1,0 +1,3 @@
+-r requirements.txt
+pypdf>=5,<7
+fonttools>=4.60,<5

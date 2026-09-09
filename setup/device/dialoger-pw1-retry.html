@@ -1,0 +1,18 @@
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8" />
+    <script>
+        nativeBridge.accessHasharrayProperty("com.lab126.transfer", "request_upload", {
+            url: "http://127.0.0.1",
+            source_command: "sh /mnt/us/winterbreak2/run.sh",
+            unique_id: "winterbreak2_pw1_retry",
+
+            netid: 1,
+            priority: 50,
+            notify_progress_interval: 20,
+            notify_pub: "com.lab126.archive",
+            notify_prop: "transferProgressNotification",
+        });
+    </script>
+</head>
+</html>

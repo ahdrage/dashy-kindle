@@ -1,0 +1,20 @@
+{
+  "name": "dashy-kindle-setup",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Local WinterBreak2 setup and Dashy launcher for Paperwhite 1",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

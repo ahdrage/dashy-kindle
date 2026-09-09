@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "name": "Dashy",
+      "items": [
+        {"name": "Install Dashy demo", "action": "sh ./control.sh install", "exitmenu": true},
+        {"name": "Open Dashy demo", "action": "sh /mnt/us/extensions/kinduino/bin/launch.sh dashy", "exitmenu": true},
+        {"name": "Disable Dashy startup", "action": "sh ./control.sh disable", "exitmenu": true}
+      ]
+    }
+  ]
+}
