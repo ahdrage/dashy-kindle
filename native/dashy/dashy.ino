@@ -6,13 +6,13 @@
 #include <cstdio>
 #include "Dashboard.h"
 #include "LandscapeBackend.h"
-#include "DemoReadings.h"
+#include "NetatmoRuntime.h"
 
 static DefaultBackend backend;
 static dashy::LandscapeBackend landscape(backend);
 static Display display;
 static KindleFont regular, medium;
-static dashy::Dashboard dashboard(display, regular, medium, dashy::demoReadings);
+static dashy::Dashboard dashboard(display, regular, medium, {"--.-°C", "---- ppm", "--.-°C", "NETATMO · HENTER MÅLINGER"});
 
 static bool loadFont(KindleFont& font, const char* path) {
     File file = Assets.open(path);
@@ -46,10 +46,15 @@ void setup() {
         std::fprintf(stderr, "Dashy: bundled fonts missing; reinstall the complete package\n");
         std::exit(1); // The supervisor restores the reader interface.
     }
+    if (!dashy::startNetatmo()) {
+        std::fprintf(stderr,"Dashy: Netatmo worker could not start\n");
+        std::exit(1);
+    }
 }
 
 void loop() {
     if (kinduinoExitRequested()) return;
+    dashboard.setReadings(dashy::netatmoReadings());
     if (dashboard.update(std::time(nullptr)) && !backend.lastOk()) {
         std::fprintf(stderr, "Dashy: display connection failed\n");
         std::exit(1);

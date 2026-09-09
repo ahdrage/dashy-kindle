@@ -123,6 +123,28 @@ int main(int argc, char** argv) {
         }
         CHECK(changedPixels > 100);
         checkRotation(); // A minute update must not damage the date or readings.
+        const auto beforeData=physical.pixels;
+        horizontal.setReadings({"22.7°C", "801 ppm", "-3.2°C", "NETATMO · HENTET 09.09 22:00"});
+        CHECK(horizontal.update(1788964380)); // New readings within the same minute.
+        CHECK(physical.mode==RefreshMode::CONTENT && physical.w<758);
+        checkRotation();
+        int changedData=0;
+        for (int y=0;y<1024;++y) for (int x=0;x<758;++x) {
+            if (beforeData[y*758+x]!=physical.pixels[y*758+x]) {
+                ++changedData;
+                CHECK(x>=physical.x && x<physical.x+physical.w && y>=physical.y && y<physical.y+physical.h);
+            }
+        }
+        CHECK(changedData>100);
+        horizontal.setReadings({"22.7°C", "801 ppm", "-3.2°C", "NETATMO · HENTET 09.09 22:00"});
+        CHECK(!horizontal.update(1788964381)); // Unchanged readings do not flash.
+        Panel referencePanel;
+        dashy::LandscapeBackend referenceBackend(referencePanel);
+        Display reference;
+        reference.begin(&referenceBackend);
+        dashy::Dashboard fresh(reference,regular,medium,{"22.7°C", "801 ppm", "-3.2°C", "NETATMO · HENTET 09.09 22:00"});
+        fresh.update(1788964380);
+        CHECK(referencePanel.pixels==physical.pixels); // Partial redraw removes old glyphs completely.
     }
     std::printf("Native dashboard checks: %d failures\n", failures);
     return failures ? 1 : 0;

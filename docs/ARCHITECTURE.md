@@ -4,10 +4,12 @@ The native app and optional Python preview share the display design and Netatmo 
 
 ```mermaid
 flowchart TD
-    A[sample-data.json] --> B[Build demo labels and static fonts]
+    A[Source and public font / TLS assets] --> B[Build native app and assets]
     B --> C[ARM executable and validated upload manifest]
     C --> D[Kinduino installer and supervisor]
     D --> E[Native C++ dashboard]
+    N[Netatmo HTTPS / OAuth worker] --> E
+    S[Private persistent credentials] --> N
     E --> F[Landscape pixel and refresh-area rotation]
     F --> G[Kinduino display protocol]
     G --> H[Separate FBInk service]
@@ -20,7 +22,7 @@ flowchart TD
 
 For the final USB-edge-left orientation, a logical pixel `(x, y)` maps to physical `(y, 1023 - x)`. A rectangle `(x, y, w, h)` maps to `(y, 1024 - x - w, h, w)`. Within its rotated buffer, source `(column, row)` maps to index `(w - 1 - column) * h + row`, with row stride `h`. The app leaves the system framebuffer geometry and reader orientation alone.
 
-The clock uses the Kindle system time and POSIX Oslo daylight-saving rules. Dates before 2020 produce a clock-setting prompt. It polls every 200 ms, redraws the clock at minute boundaries, and requests a full refresh every 15 minutes, on a date change, or after a time jump. There are no seconds or live sensor requests. This version uses the runtime's awake-display policy, not RTC sleep between updates.
+The clock uses the Kindle system time and POSIX Oslo daylight-saving rules. Dates before 2020 produce a clock-setting prompt. It polls every 200 ms, redraws the clock at minute boundaries, and requests a full refresh every 15 minutes, on a date change, or after a time jump. A separate worker fetches Netatmo every three minutes; sensor/status changes refresh their own region. The display thread never waits for DNS, TLS or OAuth. This version uses the runtime's awake-display policy, not RTC sleep between updates.
 
 ## Launching and updating
 
@@ -32,7 +34,8 @@ The launcher detaches the **whole update operation** before the reader interface
 2. Requests a graceful stop of an existing Dashy supervisor and waits for its runtime processes to exit.
 3. Removes a leftover `run/current` marker only when no runtime process remains.
 4. Installs a pending upload, if present, using the runtime's own validator.
-5. Starts Dashy through the detached application launcher and saves diagnostic logs on USB storage.
+5. Imports separately staged Netatmo credentials, when present, into the app’s private writable directory.
+6. Starts Dashy through the detached application launcher and saves diagnostic logs on USB storage.
 
 Another app, an orphaned runtime process, or a stop timeout blocks the update. The code does not clear the session marker simply because reopening failed.
 
@@ -49,3 +52,9 @@ Kinduino owns stopping and restoring the reader framework, input handling, the d
 Automatic startup is opt-in. It adds its own upstart job, checks USB-accessible disable flags, and attempts launch once per boot. This path has host coverage but has not been validated through a physical reboot.
 
 The Python preview exposes fixed display routes. The setup server separately exposes a page and an empty download with a fixed dialog header. Neither serves the repository as a file directory. The setup server defaults to loopback; bind it to the local network only while using the Kindle launcher.
+
+## Netatmo credentials and retries
+
+The app stores credentials and the latest refresh token in its nobody-owned `files/netatmo.json`, mode 0600. Rotation uses a temporary file, file synchronization and atomic rename before a station request. Uploads replace the executable/assets while preserving `files/`. The public TLS root is an ordinary checked asset; credentials never are.
+
+OAuth and data parsing are independent of the transport and filesystem adapters. The worker publishes an owning snapshot under a short mutex; the UI never holds that mutex during network I/O. A rejected grant stops requests until credentials are replaced and the app restarted. An API authorization failure gets one refresh/retry. Rate limits use bounded Retry-After; network/data failures preserve the last readings with an error label. See [NETATMO.md](NETATMO.md).

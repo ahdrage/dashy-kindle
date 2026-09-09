@@ -4,7 +4,7 @@ A native e-ink dashboard for the **Kindle Paperwhite 1**, inspired by [Dashy for
 
 ![Native dashboard, rendered from the same C++ used on the Kindle](docs/assets/dashboard.png)
 
-An Oslo clock, Norwegian date, and three sensor columns: **INNE | CO2 | UTE**. The demo values are **21.3°C indoors, 623 ppm CO2, and 14.2°C outdoors**. They are sample data; no API keys or external services are used.
+An Oslo clock, Norwegian date, and three sensor columns: **INNE | CO2 | UTE**. The native app reads **live Netatmo data every three minutes**, using privately configured OAuth credentials. The screenshot and Python preview use sample values. See [Netatmo setup](docs/NETATMO.md).
 
 **Confirmed working on 9 September 2026:** Paperwhite 1 Wi-Fi (model prefix B024), firmware **5.6.1.1 (268989035)**. The final layout is **1024 × 758 landscape, with the USB/power edge on the left**. Portrait, landscape, the final 180-degree flip, and reopening through the local browser launcher were confirmed on the physical device. The image above is a host render of the native C++ framebuffer.
 
@@ -12,7 +12,7 @@ An Oslo clock, Norwegian date, and three sensor columns: **INNE | CO2 | UTE**. T
 
 Dashy runs on the Kindle through **Kinduino 0.5.2**. Kinduino stops Amazon's reader interface while the app runs and uses the existing Linux system and display drivers. **This is an application and runtime, not a replacement OS image.** The selected approach does not erase the Kindle OS.
 
-Once open, the clock and dummy dashboard run on the Kindle without a Mac serving images. The currently verified way to reopen it uses a small HTTP launcher on a Mac on the same Wi-Fi. An offline shortcut and automatic startup are included but still need physical validation; startup is disabled by default.
+Once open, the clock and Netatmo dashboard run on the Kindle without a Mac serving images. Live readings require the Kindle’s Wi-Fi connection. The currently verified way to reopen it uses a small HTTP launcher on a Mac on the same Wi-Fi. An offline shortcut and automatic startup are included but still need physical validation; startup is disabled by default.
 
 ## Start here
 
@@ -34,7 +34,8 @@ Read [what we learned](docs/LEARNINGS.md) for the missing decoder, misleading do
 | Exit gesture, sleep/wake, battery life, long unattended operation | Not systematically verified on the device |
 | Automatic boot startup | Implemented, disabled, not physically validated |
 | Library scriptlets and `;log runme` offline shortcut | Included; not confirmed as working entry points on this device |
-| Live Netatmo, calendar events, automatic clock synchronization | Not implemented |
+| Netatmo OAuth, HTTPS, refresh-token persistence and station readings | Confirmed with live account data on the host and physical Kindle |
+| Calendar events and automatic clock synchronization | Not implemented |
 
 This is a record of one tested hardware/firmware combination, not a general compatibility claim for other Kindles. Future builds still need their own physical checks.
 
@@ -52,7 +53,7 @@ This is a record of one tested hardware/firmware combination, not a general comp
 | `tests/`, `native/tests/`, `setup/server/test/` | Host verification |
 | `docs/` | Architecture, setup lessons and preview guide |
 
-Changing `sample-data.json` changes the **next native build**. The Python preview rereads it on each request. Future API credentials belong outside source control.
+The Python preview rereads `sample-data.json` on each request. The native app reads Netatmo and shows placeholders until connected. Credentials and replacement refresh tokens stay outside source control and installation archives.
 
 ## License and attribution
 

@@ -2,7 +2,7 @@
 
 Tested on **Kindle Paperwhite 1 Wi-Fi (B024), firmware 5.6.1.1 (268989035)**. The final 1024 × 758 landscape dashboard has the **USB/power edge on the left**. Its display and browser reopening were confirmed working on 9 September 2026.
 
-The demo shows an Oslo clock, Norwegian date and sample sensor readings. Once open, it renders on the Kindle without a Mac serving images. It uses the Kindle's system clock; a date before 2020 displays “Still klokken på Kindle”. Live APIs and time synchronization are not implemented.
+The app shows an Oslo clock, Norwegian date and live Netatmo readings. Once open, it runs on the Kindle without a Mac serving images, using the Kindle’s Wi-Fi. It uses the Kindle’s system clock; a date before 2020 displays “Still klokken på Kindle”. Automatic clock synchronization is not implemented. The original demo and subsequent live Netatmo update were both confirmed on the physical device.
 
 Amazon's reader interface stops while Dashy runs, but the existing OS and hardware drivers remain. The archive is an application/runtime bundle and does not itself unlock the Kindle.
 
@@ -23,6 +23,10 @@ Copy the **contents** of the archive's `USB-ROOT` directory to the Kindle USB dr
 Copy all application files and font assets first, then `.kinduino/manifest`, and **`.kinduino/READY` last**. Verify the copied files against the archive's `SHA256SUMS` before safely ejecting. The upload is consumed when the runtime installs it. The controls live in `extensions/dashy`, and the runtime installer lives in `extensions/kinduino`.
 
 The bundle includes `winterbreak2/dialoger-launch.html` and `dashy/apply-landscape.sh`. The latter is the historical device name of the general reopen/update entry point; it now supports the final orientation. It is packaged from `native/browser-launch.sh`.
+
+## Netatmo credentials
+
+Follow [Netatmo setup](../docs/NETATMO.md) to check the credentials privately and stage them separately from the app bundle. At the next launch, the updater moves them into app storage and removes the USB staging copy. Later app updates preserve the current refresh token.
 
 ## Reopening and updating
 

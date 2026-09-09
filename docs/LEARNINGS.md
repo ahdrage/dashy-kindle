@@ -143,7 +143,15 @@ Build dependency URLs and checksums are in [native/README.md](../native/README.m
 - Measure battery use and consider an RTC-based sleep strategy.
 - Confirm a reliable offline launcher.
 - Inspect boot behavior and validate the supplied opt-in startup job through a complete reboot.
-- Add live Netatmo or calendar data and clock synchronization, with credentials stored outside source control.
+- Add calendar data and clock synchronization. Live Netatmo was implemented in the follow-up below.
 - Extend model/firmware support only after checking the corresponding display, runtime and recovery behavior.
 
 The current result is a working native dummy dashboard with a confirmed landscape orientation and reopening path. It is not yet a fully validated unattended appliance.
+
+## Netatmo follow-up
+
+The native app now follows the original Dashy refresh-token flow and three-minute station cadence. The same C++ OAuth, BearSSL TLS and private token store successfully fetched real account readings on the Mac. The user subsequently confirmed live readings on the physical Kindle after installing the update.
+
+Credentials are entered in an ignored private file, checked without printing them, and staged separately from the application archive. Replacement refresh tokens are saved atomically and survive reinstallation. HTTPS verifies Netatmo’s hostname, certificate chain and expiry using a fingerprint-checked DigiCert root, instead of the original firmware’s insecure TLS mode.
+
+A worker keeps network delays away from the clock and exit handling. Host tests deliberately block a request while checking that display reads remain responsive. Updated values and connection messages redraw just the data region, with rotation checks comparing it against a full redraw. [Setup and operating details](NETATMO.md).

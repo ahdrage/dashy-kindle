@@ -44,6 +44,11 @@ def prepare():
                 record.string = names[record.nameID].encode(record.getEncoding())
         font.save(data / f"DashySans-{style}.ttf")
     shutil.copy2(ROOT / "assets/fonts/OFL.txt", data / "OFL.txt")
+    certificate = ROOT / "assets/certs/DigiCertGlobalRootG2.crt"
+    import ssl
+    if hashlib.sha256(ssl.PEM_cert_to_DER_cert(certificate.read_text())).hexdigest() != "cb3ccbb76031e5e0138f8dd39a23f9de47ffc35e43c1144cea27d46a5ab1cb5f":
+        raise ValueError("Unexpected Netatmo root certificate")
+    shutil.copy2(certificate, data / certificate.name)
     readings = readings_from_netatmo(json.loads((ROOT / "sample-data.json").read_text()))
     def temperature(value):
         return "--.-°C" if value is None else f"{value:.1f}°C"
@@ -52,7 +57,7 @@ def prepare():
               temperature(readings["outdoor_c"])]
     (sketch / "DemoReadings.h").write_text(
         '#pragma once\n#include "Dashboard.h"\nnamespace dashy {\n'
-        'static constexpr Readings demoReadings = {'
+        'static const Readings demoReadings = {'
         + ", ".join(json.dumps(label, ensure_ascii=False) for label in labels) + '};\n}\n')
     return sketch
 

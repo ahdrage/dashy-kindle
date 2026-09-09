@@ -44,24 +44,34 @@ void Dashboard::text(const char* value, double center, double top, double size,
     font.drawText(display_, x, baseline, value, height, gray);
 }
 
-void Dashboard::draw(const Frame& frame, bool full) {
+void Dashboard::setReadings(Readings readings) {
+    if (!(readings == readings_)) { readings_=std::move(readings); readingsChanged_=true; }
+}
+
+void Dashboard::draw(const Frame& frame, bool full, bool clockChanged) {
     double scale = display_.width() / 400.0;
     auto px = [scale](double value) { return static_cast<int>(std::lround(value * scale)); };
     bool portrait = display_.height() > display_.width();
     int clockY = portrait ? 80 : 20;
     int clockH = portrait ? 125 : 82;
     if (full) display_.clear(0xF0);
-    else display_.fillRect(0, px(clockY), display_.width(), px(clockH), 0xF0);
-    text(frame.clock.c_str(), 200, portrait ? 92 : 30, portrait ? 108 : 78);
+    else if (clockChanged) display_.fillRect(0, px(clockY), display_.width(), px(clockH), 0xF0);
+    if (full || clockChanged) text(frame.clock.c_str(), 200, portrait ? 92 : 30, portrait ? 108 : 78);
     if (full) {
         text(frame.date.c_str(), 200, portrait ? 212 : 105, 19, true);
         int separatorY = portrait ? 277 : 141;
+        display_.fillRect(px(30), px(separatorY), px(340), std::max(1, px(1)), 0x50);
+    }
+    int dataTop=portrait ? 303 : 158;
+    int dataBottom=portrait ? 505 : 273;
+    if (full || readingsChanged_) {
+        if (!full) display_.fillRect(0,px(dataTop),display_.width(),px(dataBottom)-px(dataTop),0xF0);
         int titleY = portrait ? 308 : 163;
         int valueY = portrait ? 347 : 194;
         int dividerBottom = portrait ? 387 : 229;
-        display_.fillRect(px(30), px(separatorY), px(340), std::max(1, px(1)), 0x50);
+
         const char* titles[] = {"INNE", "CO2", "UTE"};
-        const char* values[] = {readings_.indoor, readings_.co2, readings_.outdoor};
+        const char* values[] = {readings_.indoor.c_str(), readings_.co2.c_str(), readings_.outdoor.c_str()};
         const int centers[] = {67, 200, 333};
         for (int i = 0; i < 3; ++i) {
             text(titles[i], centers[i], titleY, 14, true, 0x40);
@@ -69,11 +79,15 @@ void Dashboard::draw(const Frame& frame, bool full) {
         }
         for (int x : {133, 267})
             display_.fillRect(px(x), px(titleY + 1), std::max(1, px(1)), px(dividerBottom - titleY - 1), 0x50);
-        text("DEMOVISNING · EKSEMPELDATA", 200, portrait ? 487 : 255, 9, true, 0x50);
+        text(readings_.footer.c_str(), 200, portrait ? 487 : 255, 9, true, 0x50);
+    }
+    if (full) {
         display_.fillRect(px(170), px(portrait ? 516 : 280), px(60), px(3), 0);
         display_.refresh(RefreshMode::FULL_FLASH, 0, 0, display_.width(), display_.height());
     } else {
-        display_.refresh(RefreshMode::CONTENT, 0, px(clockY), display_.width(), px(clockH));
+        int top=clockChanged ? clockY : dataTop;
+        int bottom=readingsChanged_ ? dataBottom : clockY+clockH;
+        display_.refresh(RefreshMode::CONTENT, 0, px(top), display_.width(), px(bottom)-px(top));
     }
 }
 
@@ -81,8 +95,9 @@ bool Dashboard::update(std::time_t now) {
     Frame frame = frameAt(now);
     bool full = !started_ || frame.date != previous_.date || now < lastRefresh_
                 || now - lastRefresh_ > 120 || now - lastFull_ >= 15 * 60;
-    if (!full && frame.clock == previous_.clock) return false;
-    draw(frame, full);
+    if (!full && frame.clock == previous_.clock && !readingsChanged_) return false;
+    draw(frame, full, frame.clock != previous_.clock);
+    readingsChanged_=false;
     previous_ = frame;
     lastRefresh_ = now;
     if (full) lastFull_ = now;

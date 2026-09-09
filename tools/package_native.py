@@ -69,7 +69,7 @@ def package():
     for asset in assets:
         payload.update(asset.name.encode())
         payload.update(asset.read_bytes())
-    build_id = "dashy-demo-" + payload.hexdigest()[:16]
+    build_id = "dashy-netatmo-" + payload.hexdigest()[:16]
     manifest = ["version: 2", "api_version: 2.0.0", "name: dashy", "target_arch: armv7",
                 f"build_id: {build_id}", "elf: sketch.elf", f"sha256: {sha256(program)}",
                 f"size: {program.stat().st_size}", f"asset_count: {len(assets)}"]
@@ -89,7 +89,7 @@ def package():
     source = staging / "source"
     for directory in ("native", "setup", "tools", "tests", "assets", "web", "docs"):
         shutil.copytree(ROOT / directory, source / directory,
-                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "node_modules", ".DS_Store"))
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "node_modules", ".DS_Store", "secrets*", ".env*", "netatmo.json", "netatmo.pending.json", "netatmo.json.tmp.*", "*.key", "*.pem"))
     for filename in ("README.md", "DEVICE-SETUP.md", "NOTICE.md", "LICENSE", "dashy.py",
                      "requirements.txt", "requirements-dev.txt", ".gitignore"):
         shutil.copy2(ROOT / filename, source / filename)
@@ -98,6 +98,9 @@ def package():
     licenses = staging / "licenses"
     licenses.mkdir()
     shutil.copy2(SDK / "LICENSE", licenses / "Kinduino-MIT.txt")
+    shutil.copy2(SDK / "arduino/libraries/BearSSL/LICENSE.txt", licenses / "BearSSL-MIT.txt")
+    arduino_json = (SDK / "arduino/libraries/ArduinoJson/ArduinoJson-v7.4.3.h").read_text()
+    (licenses / "ArduinoJson-MIT.txt").write_text(arduino_json[:arduino_json.index("#ifndef")])
     zig = ROOT / ".deps/zig-aarch64-macos-0.16.0"
     for name, path in (("musl.txt", "lib/libc/musl/COPYRIGHT"), ("libcxx.txt", "lib/libcxx/LICENSE.TXT"),
                        ("libcxxabi.txt", "lib/libcxxabi/LICENSE.TXT"), ("libunwind.txt", "lib/libunwind/LICENSE.TXT"),
@@ -115,6 +118,7 @@ def package():
         "program_sha256": sha256(program), "program_size": program.stat().st_size,
         "orientation": "landscape", "logical_size": [1024, 758], "usb_power_edge": "left",
         "physical_device_tested": False, "autostart_enabled": False,
+        "data_source": "Netatmo", "poll_interval_seconds": 180, "credentials_included": False,
     }, indent=2) + "\n")
     checksums = [f"{sha256(path)}  {path.relative_to(staging).as_posix()}"
                  for path in sorted(staging.rglob("*")) if path.is_file()]

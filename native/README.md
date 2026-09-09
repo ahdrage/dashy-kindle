@@ -36,14 +36,15 @@ Run from the repository root:
 ```sh
 .venv/bin/python tools/build_native.py
 sh tools/test_native.sh
+sh tools/test_netatmo.sh
 .venv/bin/python tools/package_native.py
 .venv/bin/python -m unittest discover -s native/tests -p 'test_bundle.py' -v
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-`build_native.py` generates sample labels from `sample-data.json`, creates static font instances, and cross-compiles for the SDK's `pw1_storage` board. It verifies the SDK commit. `package_native.py` checks the runtime archive checksum, ARM executable format, manifest and asset hashes. Automatic startup is disabled in every generated package.
+`build_native.py` prepares static font instances and the verified public TLS root certificate, then cross-compiles for the SDK's `pw1_storage` board. It verifies the SDK commit. `package_native.py` checks the runtime archive checksum, ARM executable format, manifest and asset hashes. Automatic startup is disabled in every generated package.
 
-The first compiler build can take several minutes and emit upstream nullability warnings. Detailed diagnostics are saved in `output/native/build.log`. Use `--prepare-only` to generate labels and fonts without cross-compiling.
+The first compiler build can take several minutes and emit upstream nullability warnings. Detailed diagnostics are saved in `output/native/build.log`. Use `--prepare-only` to generate assets without cross-compiling.
 
 The Montserrat variable font is instantiated at weights 400 and 500 for the native font renderer. These derivatives are named **Dashy Sans** and retain their OFL license.
 
@@ -69,3 +70,7 @@ The bundle tests compile the **actual Kinduino installer C code** for the host. 
 Unlock unpack tests are optional: they skip until the separately downloaded upstream payload is prepared. [Setup instructions](../setup/README.md) explain how to run them without executing any system-changing installer code on the host.
 
 See [INSTALL.md](INSTALL.md) for installation and recovery. Host checks do not establish battery life, physical exit behavior, sleep/wake or boot reliability.
+
+## Live Netatmo
+
+See [Netatmo setup](../docs/NETATMO.md). The same OAuth client and BearSSL HTTPS transport are used by the Kindle and `tools/check_netatmo.py`. Tests cover token rotation/restart, expiry, one authorization retry, rate limits, missing/invalid readings, stale data, private atomic storage and a blocked network request that must not block the display thread. No private settings are compiled into the executable or packaged as assets.

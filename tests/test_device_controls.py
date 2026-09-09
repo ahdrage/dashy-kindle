@@ -54,6 +54,39 @@ class DeviceControlsTests(unittest.TestCase):
     def enable_flag(self):
         (self.root / "mnt/us/dashy/autostart-enabled").touch()
 
+    def test_netatmo_import_moves_private_credentials_out_of_usb_after_copy(self):
+        source=self.root / "mnt/us/dashy/netatmo.pending.json"
+        source.write_text('{"client_id":"example","client_secret":"private-test","refresh_token":"fresh"}')
+        self.tool("test-bin/chown", 'echo "chown $*" >> "$DASHY_ROOT/actions"')
+        result=self.run_script("import-netatmo.sh")
+        self.assertEqual(result.returncode,0,result.stderr)
+        target=self.root / "var/local/kinduino/sketches/dashy/files/netatmo.json"
+        self.assertIn("private-test",target.read_text())
+        self.assertEqual(target.stat().st_mode & 0o777,0o600)
+        self.assertFalse(source.exists())
+        self.assertNotIn("private-test",result.stdout+result.stderr)
+        self.assertIn("chown 99:99",self.actions())
+
+    def test_netatmo_import_preserves_existing_tokens_when_nothing_staged(self):
+        files=self.root / "var/local/kinduino/sketches/dashy/files"
+        files.mkdir(); (files / "netatmo.json").write_text("existing rotated token")
+        result=self.run_script("import-netatmo.sh")
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual((files / "netatmo.json").read_text(),"existing rotated token")
+
+    def test_netatmo_import_refuses_running_app_and_symlink_destinations(self):
+        source=self.root / "mnt/us/dashy/netatmo.pending.json"
+        source.write_text('{"client_id":"example"}')
+        marker=self.root / "var/local/kinduino/run/current"
+        marker.parent.mkdir(); marker.write_text("dashy")
+        self.assertNotEqual(self.run_script("import-netatmo.sh").returncode,0)
+        self.assertTrue(source.exists())
+        marker.unlink()
+        files=self.root / "var/local/kinduino/sketches/dashy/files"
+        files.symlink_to(self.root / "mnt/us/dashy",target_is_directory=True)
+        self.assertNotEqual(self.run_script("import-netatmo.sh").returncode,0)
+        self.assertTrue(source.exists())
+
     def test_no_launch_without_enabled_flag_or_with_usb_disable_file(self):
         self.assertEqual(self.run_script("boot.sh").returncode, 0)
         self.enable_flag()

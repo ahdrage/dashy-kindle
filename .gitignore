@@ -19,3 +19,8 @@ node_modules/
 # Private device history and unrelated workspace notes.
 DEVICE-PROGRESS.md
 *-assessment-*.md
+
+# Netatmo credentials and rotated token files are never source assets.
+netatmo.json
+netatmo.pending.json
+netatmo.json.tmp.*

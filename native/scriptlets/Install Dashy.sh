@@ -7,6 +7,7 @@ mkdir -p "$CONTROL"
 exec > "$CONTROL/install.log" 2>&1
 KINDUINO_DIR="$RUNTIME" EXT="$USB/extensions/kinduino" sh "$USB/extensions/kinduino/bin/kinduino-install"
 sh "$EXT/control.sh" install
+sh "$EXT/import-netatmo.sh"
 echo 'Dashy installed. Open Dashy from the Kindle library.'
 if [ -x "$ROOT/usr/sbin/eips" ]; then
     "$ROOT/usr/sbin/eips" 1 2 'Dashy installed. Open Dashy in the library.' || true

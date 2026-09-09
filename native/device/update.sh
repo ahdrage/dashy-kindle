@@ -22,6 +22,7 @@ echo 'Closing the previous session'
 sh "$EXT/stop.sh"
 echo 'Applying any pending dashboard update'
 sh "$EXT/control.sh" install
+sh "$EXT/import-netatmo.sh"
 echo 'Opening Dashy'
 sh "$USB/documents/Open Dashy.sh"
 sleep 5
