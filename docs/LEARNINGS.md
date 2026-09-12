@@ -155,3 +155,11 @@ The native app now follows the original Dashy refresh-token flow and three-minut
 Credentials are entered in an ignored private file, checked without printing them, and staged separately from the application archive. Replacement refresh tokens are saved atomically and survive reinstallation. HTTPS verifies Netatmo’s hostname, certificate chain and expiry using a fingerprint-checked DigiCert root, instead of the original firmware’s insecure TLS mode.
 
 A worker keeps network delays away from the clock and exit handling. Host tests deliberately block a request while checking that display reads remain responsive. Updated values and connection messages redraw just the data region, with rotation checks comparing it against a full redraw. [Setup and operating details](NETATMO.md).
+
+## Night-mode follow-up — 12 September 2026
+
+The requested schedule is 23:00–07:00 in Oslo. The next wake time is calculated as a local calendar time with DST recomputed for the morning, so it is not always eight elapsed hours. The pinned Kinduino runtime already supplies timed suspend and a framework shim for resuming the app; Dashy uses those controls instead of adding another power daemon.
+
+Sleep must wait until the network worker has finished its current request and saved any rotated refresh token. The old kernel's monotonic clock stops during suspend, so the worker adds measured suspended time after wake to keep OAuth expiry correct. A blank night screen also invalidates the renderer's previous frame, ensuring that even a short wake within the same minute redraws the entire dashboard.
+
+The first launch performs a one-minute hardware test and persists its result. Only actual timed suspend/resume enables the schedule; failed or interrupted tests leave the daytime dashboard available. Host schedule, network, redraw and bundle checks pass. The update is prepared for physical verification; overnight reliability and battery consumption remain unmeasured. See [night-mode setup and test details](NIGHT-MODE.md).

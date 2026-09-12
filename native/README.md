@@ -35,6 +35,7 @@ Run from the repository root:
 
 ```sh
 .venv/bin/python tools/build_native.py
+sh tools/test_night.sh
 sh tools/test_native.sh
 sh tools/test_netatmo.sh
 .venv/bin/python tools/package_native.py

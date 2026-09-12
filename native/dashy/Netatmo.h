@@ -30,6 +30,8 @@ public:
     Readings view(std::time_t now) const;
     bool due(uint64_t tick) const { return authorized_ && tick>=nextPoll_; }
     NetatmoStatus status() const { return status_; }
+    bool safeToSleep() const { return !pendingSave_; }
+    void afterSleep(uint64_t tick);
 private:
     NetatmoTransport& http_;
     NetatmoStore& store_;

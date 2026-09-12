@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 static std::atomic<bool> entered{false}, releaseRequest{false}, exiting{false};
+static std::atomic<int> requests{0};
 WiFiClass WiFi;
 uint8_t WiFiClass::status() { return WL_CONNECTED; }
 bool WiFiClass::lipcGet(const char*,const char*,std::string&) { return false; }
@@ -22,6 +23,7 @@ int kinduinoExitRequested() { return exiting ? 1 : 0; }
 dashy::HttpResponse dashy::NetatmoHttps::request(const std::string& method,const std::string&,
                                                const std::string&,const std::string&) {
     entered=true;
+    ++requests;
     while (!releaseRequest) std::this_thread::sleep_for(std::chrono::milliseconds(1));
     if (method=="POST") return {200,R"({"access_token":"access-test","refresh_token":"rotated-test","expires_in":10800})",""};
     return {200,R"({"body":{"devices":[{"dashboard_data":{"Temperature":22.5,"CO2":701},"modules":[]}]}})",""};
@@ -36,6 +38,7 @@ int main(int argc,char**argv) {
     auto initial=dashy::netatmoReadings();
     CHECK(std::chrono::steady_clock::now()-begin<std::chrono::milliseconds(100));
     CHECK(initial.footer.find("HENTER")!=std::string::npos);
+    CHECK(!dashy::pauseNetatmo()); // A blocked HTTP/token request is still in progress.
     releaseRequest=true;
     dashy::Readings live;
     for (int i=0;i<1000;++i) {
@@ -46,6 +49,14 @@ int main(int argc,char**argv) {
     CHECK(live.indoor=="22.5°C" && live.co2=="701 ppm");
     dashy::FileNetatmoStore store("files/netatmo.json"); dashy::NetatmoConfig config;
     CHECK(store.load(config) && config.refreshToken=="rotated-test");
+    CHECK(dashy::pauseNetatmo()); // No in-flight request and the rotated token is durable.
+    const int pausedRequests=requests;
+    std::this_thread::sleep_for(std::chrono::milliseconds(1100));
+    CHECK(requests==pausedRequests);
+    dashy::resumeNetatmo(8*3600);
+    for (int i=0;i<1000 && requests<pausedRequests+2;++i)
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    CHECK(requests==pausedRequests+2); // Expired OAuth is refreshed before new readings.
     exiting=true;
     std::this_thread::sleep_for(std::chrono::milliseconds(1100));
     std::puts("Netatmo worker: display reads stay responsive during a blocked request; token rotation persists.");

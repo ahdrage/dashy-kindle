@@ -69,7 +69,7 @@ def package():
     for asset in assets:
         payload.update(asset.name.encode())
         payload.update(asset.read_bytes())
-    build_id = "dashy-netatmo-" + payload.hexdigest()[:16]
+    build_id = "dashy-night-" + payload.hexdigest()[:16]
     manifest = ["version: 2", "api_version: 2.0.0", "name: dashy", "target_arch: armv7",
                 f"build_id: {build_id}", "elf: sketch.elf", f"sha256: {sha256(program)}",
                 f"size: {program.stat().st_size}", f"asset_count: {len(assets)}"]
@@ -119,6 +119,7 @@ def package():
         "orientation": "landscape", "logical_size": [1024, 758], "usb_power_edge": "left",
         "physical_device_tested": False, "autostart_enabled": False,
         "data_source": "Netatmo", "poll_interval_seconds": 180, "credentials_included": False,
+        "night_schedule": "23:00-07:00 Europe/Oslo", "night_requires_rtc_test": True,
     }, indent=2) + "\n")
     checksums = [f"{sha256(path)}  {path.relative_to(staging).as_posix()}"
                  for path in sorted(staging.rglob("*")) if path.is_file()]

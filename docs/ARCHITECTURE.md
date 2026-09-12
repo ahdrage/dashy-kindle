@@ -22,7 +22,9 @@ flowchart TD
 
 For the final USB-edge-left orientation, a logical pixel `(x, y)` maps to physical `(y, 1023 - x)`. A rectangle `(x, y, w, h)` maps to `(y, 1024 - x - w, h, w)`. Within its rotated buffer, source `(column, row)` maps to index `(w - 1 - column) * h + row`, with row stride `h`. The app leaves the system framebuffer geometry and reader orientation alone.
 
-The clock uses the Kindle system time and POSIX Oslo daylight-saving rules. Dates before 2020 produce a clock-setting prompt. It polls every 200 ms, redraws the clock at minute boundaries, and requests a full refresh every 15 minutes, on a date change, or after a time jump. A separate worker fetches Netatmo every three minutes; sensor/status changes refresh their own region. The display thread never waits for DNS, TLS or OAuth. This version uses the runtime's awake-display policy, not RTC sleep between updates.
+The clock uses the Kindle system time and POSIX Oslo daylight-saving rules. Dates before 2020 produce a clock-setting prompt. During the day it polls every 200 ms, redraws the clock at minute boundaries, and requests a full refresh every 15 minutes, on a date change, or after a time jump. A separate worker fetches Netatmo every three minutes; sensor/status changes refresh their own region. The display thread never waits for DNS, TLS or OAuth.
+
+`NightMode` calculates the next local 07:00 with a fresh DST calculation and requests timed sleep from 23:00 onward. Its hardware adapter uses the pinned runtime's suspend API and light controls. The network worker must first acknowledge that no request or token save is in progress. A durable one-time hardware test gates the schedule; on morning wake the full screen is redrawn and suspend time advances the OAuth expiry clock. See [night mode](NIGHT-MODE.md).
 
 ## Launching and updating
 

@@ -20,6 +20,7 @@ public:
     // Returns true only when new pixels were sent to the display backend.
     bool update(std::time_t now);
     void setReadings(Readings readings);
+    void blank();
 private:
     Display& display_;
     KindleFont& regular_;

@@ -47,6 +47,11 @@ void Dashboard::text(const char* value, double center, double top, double size,
 void Dashboard::setReadings(Readings readings) {
     if (!(readings == readings_)) { readings_=std::move(readings); readingsChanged_=true; }
 }
+void Dashboard::blank() {
+    display_.clear(0xF0);
+    display_.refresh(RefreshMode::FULL_FLASH,0,0,display_.width(),display_.height());
+    started_=false; // Even a wake in the same minute needs a complete new frame.
+}
 
 void Dashboard::draw(const Frame& frame, bool full, bool clockChanged) {
     double scale = display_.width() / 400.0;

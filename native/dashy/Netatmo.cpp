@@ -48,6 +48,9 @@ void NetatmoClient::begin() {
     authorized_=store_.load(config_) && config_.valid();
     status_=authorized_ ? NetatmoStatus::Connecting : NetatmoStatus::Unconfigured;
 }
+void NetatmoClient::afterSleep(uint64_t tick) {
+    if (status_!=NetatmoStatus::RateLimited) nextPoll_=tick;
+}
 
 void NetatmoClient::failed(const HttpResponse& response, uint64_t tick, bool tokenEndpoint) {
     if (response.code==429) {

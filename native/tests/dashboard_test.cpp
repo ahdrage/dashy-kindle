@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iterator>
 #include <vector>
+#include <algorithm>
 
 static int failures = 0;
 #define CHECK(expr) do { if (!(expr)) { std::fprintf(stderr, "FAIL line %d: %s\n", __LINE__, #expr); ++failures; } } while (0)
@@ -145,6 +146,12 @@ int main(int argc, char** argv) {
         dashy::Dashboard fresh(reference,regular,medium,{"22.7°C", "801 ppm", "-3.2°C", "NETATMO · HENTET 09.09 22:00"});
         fresh.update(1788964380);
         CHECK(referencePanel.pixels==physical.pixels); // Partial redraw removes old glyphs completely.
+        horizontal.blank();
+        CHECK(physical.mode==RefreshMode::FULL_FLASH);
+        CHECK(std::all_of(physical.pixels.begin(),physical.pixels.end(),[](auto p) { return p==0xF0; }));
+        CHECK(horizontal.update(1788964380)); // A wake in the same minute must redraw everything.
+        CHECK(physical.mode==RefreshMode::FULL_FLASH);
+        CHECK(referencePanel.pixels==physical.pixels);
     }
     std::printf("Native dashboard checks: %d failures\n", failures);
     return failures ? 1 : 0;

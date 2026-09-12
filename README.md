@@ -6,6 +6,8 @@ A native e-ink dashboard for the **Kindle Paperwhite 1**, inspired by [Dashy for
 
 An Oslo clock, Norwegian date, and three sensor columns: **INNE | CO2 | UTE**. The native app reads **live Netatmo data every three minutes**, using privately configured OAuth credentials. The screenshot and Python preview use sample values. See [Netatmo setup](docs/NETATMO.md).
 
+[Night mode](docs/NIGHT-MODE.md) sleeps from **23:00 to 07:00 Oslo time**, restoring the display and readings automatically in the morning. It enables itself only after a one-minute hardware sleep/wake test passes on the Kindle.
+
 **Confirmed working on 9 September 2026:** Paperwhite 1 Wi-Fi (model prefix B024), firmware **5.6.1.1 (268989035)**. The final layout is **1024 × 758 landscape, with the USB/power edge on the left**. Portrait, landscape, the final 180-degree flip, and reopening through the local browser launcher were confirmed on the physical device. The image above is a host render of the native C++ framebuffer.
 
 ## How it runs
@@ -32,6 +34,7 @@ Read [what we learned](docs/LEARNINGS.md) for the missing decoder, misleading do
 | Time formatting, daylight saving, refresh decisions, rotated pixels and dirty rectangles | Automated host checks pass |
 | Runtime installation, damaged payload rejection, graceful stop and stale-session handling | Automated host checks pass; reopening also confirmed on the device |
 | Exit gesture, sleep/wake, battery life, long unattended operation | Not systematically verified on the device |
+| Night schedule, DST, paused requests and redraw after wake | Host checks pass; physical timer test gates enablement |
 | Automatic boot startup | Implemented, disabled, not physically validated |
 | Library scriptlets and `;log runme` offline shortcut | Included; not confirmed as working entry points on this device |
 | Netatmo OAuth, HTTPS, refresh-token persistence and station readings | Confirmed with live account data on the host and physical Kindle |

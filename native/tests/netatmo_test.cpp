@@ -50,6 +50,27 @@ static HttpResponse station() {
 static void runTests() {
     {
         MemoryStore store; Transport http; http.responses={token(),station(),station()};
+        NetatmoClient client(http,store); client.begin(); client.poll(0,NOW,true);
+        CHECK(client.safeToSleep());
+        client.afterSleep(60);
+        CHECK(client.due(60)); // The one-minute hardware test should refresh on wake.
+        client.poll(60,NOW+60,true);
+        CHECK(http.requests.size()==3);
+    }
+    {
+        MemoryStore store; Transport http; http.responses={token(),{429,"","900"}};
+        NetatmoClient client(http,store); client.begin(); client.poll(0,NOW,true);
+        client.afterSleep(60);
+        CHECK(!client.due(60)); // A short sleep must not bypass Netatmo Retry-After.
+        CHECK(client.due(900));
+    }
+    {
+        MemoryStore store; store.writable=false; Transport http; http.responses={token()};
+        NetatmoClient client(http,store); client.begin(); client.poll(0,NOW,true);
+        CHECK(!client.safeToSleep()); // Preserve the only copy of an unsaved rotated token.
+    }
+    {
+        MemoryStore store; Transport http; http.responses={token(),station(),station()};
         NetatmoClient client(http,store); client.begin();
         http.onRequest=[&] { if (http.requests.back().method=="GET") CHECK(store.config.refreshToken=="refresh-new"); };
         CHECK(client.poll(0,NOW,true));

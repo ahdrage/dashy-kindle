@@ -25,5 +25,5 @@ sh "$EXT/control.sh" install
 sh "$EXT/import-netatmo.sh"
 echo 'Opening Dashy'
 sh "$USB/documents/Open Dashy.sh"
-sleep 5
+sleep 45 # Also capture the one-time night-mode test after its suspend/wake cycle.
 echo 'Launch requested; the screen still needs physical confirmation'
