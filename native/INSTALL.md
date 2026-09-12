@@ -34,7 +34,19 @@ Start the [local launch server](../setup/README.md#reopen-an-installed-dashboard
 
 The launcher closes a previous Dashy session gracefully, clears a leftover marker only when the runtime is inactive, applies a pending upload, and opens Dashy. For an update, first copy a newly built bundle while USB storage is available, safely eject, then use the same button.
 
+The night-mode update adds a one-time, 60-second sleep test after the dashboard first appears. Allow extra time for that test, with USB unplugged, as described below. Application updates preserve both the current Netatmo credentials and any completed night-mode test result.
+
 For an optional offline shortcut, enter **`;log runme`** in the Kindle home search bar. The bundled `RUNME.sh` uses the installed upstream dispatcher, but this path is not yet confirmed on the physical device. Entering ordinary text such as `install dashy` only performs a library search; it is not an install command.
+
+## Automatic night mode: 23:00–07:00
+
+After installing a build with night mode, open Dashy during the day and leave it untouched. It first shows the dashboard, then clears the screen and switches off the light for a one-minute hardware sleep test. Do not press the power button or reconnect USB during that minute.
+
+When Dashy returns, **NATT 23–07** in the footer means it detected a successful timed wake and enabled the schedule. It will then sleep from 23:00 until 07:00 every day in Oslo time, including daylight-saving changes. At morning it restores the previous light level, redraws the whole dashboard and refreshes Netatmo. The Mac is not needed while this runs.
+
+**NATTMODUS IKKE AKTIV** means the test or a later sleep attempt failed, or the test was interrupted. The normal dashboard remains available. If the screen stays blank for more than two minutes during the test, press the power button once and reconnect USB to inspect the logs. See [night-mode operation, troubleshooting and test reset](../docs/NIGHT-MODE.md).
+
+Night mode operates while Dashy is running. It does not enable the separate automatic startup option below, and a full reboot still requires reopening Dashy. The one-minute hardware test is not a substitute for checking a complete overnight cycle.
 
 ## Check the device
 
@@ -55,6 +67,8 @@ Reconnect USB to read these paths on the mounted drive:
 | `dashy/runtime-launch.log` | Saved runtime diagnostics |
 
 These logs can contain device details; redact them before sharing. If the launcher says to exit a running app, use the current update helper rather than deleting `run/current` by hand. It distinguishes a stale marker from a live runtime.
+
+For night mode, look for `Dashy night:` lines in `dashy/runtime-launch.log`. The test records elapsed and suspended seconds and whether it enabled the 23:00–07:00 schedule. The file is a snapshot taken after the launch wait, so reconnecting too early can show the preceding launch instead.
 
 A blank browser after the download can mean the dialog did not run, an install failed, or the launch is still in progress. Read the logs before retrying the unlock. See [the learning log](../docs/LEARNINGS.md) for the specific failures encountered here.
 

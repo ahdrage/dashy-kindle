@@ -66,11 +66,15 @@ The native renderer tests cover Norwegian formatting, Oslo winter/summer time an
 
 The device-control tests use isolated temporary filesystems and substitute device tools. They cover startup gates, once-per-boot behavior, model guards, stale session markers, graceful supervisor termination, other running apps, orphaned processes and stop timeouts.
 
+The night-mode tests cover 23:00 and 07:00 boundaries, midnight/year rollover, seven- and nine-hour DST nights, durable test results, interrupted or inhibited sleep, and cancellation of a pending network pause at morning. The Netatmo worker test checks that an in-flight request prevents sleep and that an eight-hour suspend advances OAuth expiry. Renderer checks verify that clearing the night screen is followed by a complete redraw even within the same minute.
+
 The bundle tests compile the **actual Kinduino installer C code** for the host. They check acceptance of the complete ARM payload and rejection of a damaged executable or missing font. A host-only adapter handles macOS/Linux differences when renaming read-only directories. The shipped runtime is unchanged, and the ARM program is never executed on the Mac.
 
 Unlock unpack tests are optional: they skip until the separately downloaded upstream payload is prepared. [Setup instructions](../setup/README.md) explain how to run them without executing any system-changing installer code on the host.
 
 See [INSTALL.md](INSTALL.md) for installation and recovery. Host checks do not establish battery life, physical exit behavior, sleep/wake or boot reliability.
+
+See [night-mode setup](../docs/NIGHT-MODE.md) for the one-minute on-device test that gates the 23:00–07:00 schedule. This schedule is independent of automatic boot startup, which remains disabled.
 
 ## Live Netatmo
 

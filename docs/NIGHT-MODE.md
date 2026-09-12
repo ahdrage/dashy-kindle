@@ -6,7 +6,9 @@ This is timed sleep within the running app. Automatic launch after a full shutdo
 
 ## First launch and hardware check
 
-Install the updated bundle and open Dashy as usual, with USB unplugged. On the first launch:
+For an existing installation, [build and verify the current bundle](../native/README.md#build-and-verify), then [copy it to the Kindle](../native/INSTALL.md#copy-the-bundle), including the hidden `.kinduino` directory and updated `extensions/dashy` controls. Copy `READY` last. Existing Netatmo credentials stay on the device; do not restage an older refresh token from the Mac. This update does not require repeating the jailbreak or enabling automatic boot startup.
+
+Safely eject, unplug USB and use the [local browser launcher](../setup/README.md#reopen-an-installed-dashboard) to open Dashy. On the first launch:
 
 1. Dashy displays its usual readings and a notice about the test.
 2. After at least ten seconds, it waits for any Netatmo request and refresh-token save to finish.
@@ -18,6 +20,28 @@ The test compares elapsed wall time against the monotonic clock, which stops dur
 Test status is stored in `/var/local/kinduino/sketches/dashy/files/night-mode.state`. `enabled` means the test passed. `testing` records an interrupted attempt, and `failed` disables further sleep attempts. The file survives app updates and relaunches. To repeat a failed test, close Dashy and remove only this state file through the existing device shell; never remove `files/netatmo.json`. Unknown or symlinked state files also disable night mode.
 
 The updater copies runtime diagnostics to USB `dashy/runtime-launch.log` after its launch wait. Lines beginning `Dashy night:` record the test and sleep requests. If reconnecting early, that snapshot may still be from the preceding launch.
+
+## Status and troubleshooting
+
+| What you see | Meaning and next step |
+| --- | --- |
+| `NATTTEST` notice | The first test is waiting for its ten-second display period and any active Netatmo request or token save. Leave Dashy running. |
+| Blank screen for about a minute during the first test | Expected. Leave USB unplugged and the power button untouched. |
+| `NATT 23–07` | The timed-wake test passed and the schedule is enabled. Confirm a full overnight cycle separately. |
+| `NATTMODUS IKKE AKTIV` | Sleep is disabled after a failed/interrupted test or later failed sleep attempt. Read the `Dashy night:` diagnostics before retrying. |
+| Screen still blank after two minutes during the test | Wake with the power button and reconnect USB to investigate. Do not count a manual wake as a successful timer test. |
+
+To repeat a test after resolving the cause, use an established **root shell on the Kindle**, not the Mac terminal. Close the app cleanly before removing its test state:
+
+```sh
+set -eu
+sh /mnt/us/extensions/dashy/stop.sh
+rm -f /var/local/kinduino/sketches/dashy/files/night-mode.state
+```
+
+Reopen Dashy through the normal launcher with USB unplugged. This resets only the one-time night test; it does not alter Netatmo credentials. If a stale `night-mode.state.tmp` remains after an interrupted file write, inspect it while the app is stopped before removing that exact temporary file and retrying.
+
+The hours are fixed in `nightSleepSeconds()` in [`native/dashy/NightMode.cpp`](../native/dashy/NightMode.cpp). There is currently no settings screen or runtime schedule file. Changing the hours requires updating the calculation and corresponding tests, rebuilding and installing the app.
 
 ## Network and early wakes
 
